@@ -1,10 +1,9 @@
-use std::num::Wrapping;
+
+mod finite_field_ops;
 
 fn main() {
-    test_vars(Wrapping(0xFF),Wrapping(0x1));
     println!("Hello, world!");
+    finite_field_ops::multiply(0x5, 0x5);
 }
 
-fn test_vars(a:Wrapping<u8>, b:Wrapping<u8> )  {
-    println!("{} + {} = {}", a,b, a+b );
-}
+

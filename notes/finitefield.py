@@ -4,6 +4,10 @@ m_x = 0x11b
 def myf(a,b):
     #multiply numbers together, 
     result = 0
+    if b < a:
+        temp = b
+        b = a 
+        a = temp
     
     # # 
     # while (1 << bit_position) < b:
@@ -16,12 +20,9 @@ def myf(a,b):
             result ^= (a << bit_position)
 
         bit_position += 1
-
-    shift_value = int(math.log2(result))
     result2 = result
     #mod operation
 
-    
 
     N  = result2
     while(result2 > m_x):
@@ -35,6 +36,9 @@ def myf(a,b):
 
     print(bin(result2))
     return result2
+
+def xtime(a):
+    return (a << 1) ^ 0x1b
 
 a = myf(0x57,0x83)
 
