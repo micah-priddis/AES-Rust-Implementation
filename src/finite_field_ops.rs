@@ -2,10 +2,19 @@ pub fn multiply(num1:u8, num2:u8) -> u8{
 
     //After multiplying num1 and num2 together, must take the mod of the result.
     const MOD_POLY:u16 = 0x11b;
+    let  a:u16;
+    let  b:u16;
 
-    //Cast arguments to  u16's so they can be compared to other u16's
-    let  a:u16 = num1 as u16;
-    let  b:u16 = num2 as u16;
+    if num1 < num2{
+        a = num1 as u16;
+        b = num2 as u16;
+    }
+    else{
+        b = num1 as u16;
+        a = num2 as u16;
+    }
+        //Cast arguments to  u16's so they can be compared to other u16's
+
 
 
     let mut bit_position:u8 = 0;
