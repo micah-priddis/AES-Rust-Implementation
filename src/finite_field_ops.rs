@@ -45,6 +45,12 @@ mod tests {
 
     #[test]
     fn test_multiply() {
+
         assert_eq!(0xc1, multiply(0x57, 0x83));
+        assert_eq!(0xc1, multiply(0x83, 0x57));
+        assert_eq!(0xae, multiply(0x57, 0x02));
+        assert_eq!(0x47, multiply(0x57, 0x04));
+        assert_eq!(0x8e, multiply(0x57, 0x08));
+        assert_eq!(0x07, multiply(0x57, 0x10));
     }
 }
