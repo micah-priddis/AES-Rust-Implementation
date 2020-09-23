@@ -45,6 +45,7 @@ pub fn multiply(num1:u8, num2:u8) -> u8{
     result as u8
 }
 
+#[allow(dead_code)]
 pub fn find_multiplicative_inverse(num:u8) -> u8{
     generate_multiplicative_inverse_table();
     num
