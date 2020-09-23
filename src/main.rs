@@ -1,9 +1,13 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_assignments)]
 
 mod finite_field_ops;
 use crate::finite_field_ops::generate_multiplicative_inverse_table;
 
 mod sub;
 mod key_expansion;
+mod utilities;
 
 fn main() {
     finite_field_ops::multiply(0x5, 0x5);
