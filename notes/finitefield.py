@@ -15,21 +15,23 @@ def myf(a,b):
     #         result ^= b << bit_position
     #     bit_position += 1
     bit_position = 0
-    while (1 << bit_position) < b:
+    while (1 << bit_position) <= b:
         if( (b >> bit_position) & 1):
             result ^= (a << bit_position)
-
         bit_position += 1
     result2 = result
     #mod operation
 
 
+    print(result)
+
+
     N  = result2
-    while(result2 > m_x):
+    while(result2 > 255):
         #left shifts is tells the placement of the largest 1 in the bitstring 
         left_shifts = 0
         #line up leftmost digit
-        while (result2 >> (left_shifts + 1)) >= m_x:
+        while (result2 >> (left_shifts + 1)) > m_x:
             left_shifts += 1
         #subtraction is xor in a finite field
         result2 ^= (m_x <<  left_shifts)
@@ -40,6 +42,6 @@ def myf(a,b):
 def xtime(a):
     return (a << 1) ^ 0x1b
 
-a = myf(0x57,0x83)
+a = myf(128,2)
 
-print(hex(a))
+print(a)
