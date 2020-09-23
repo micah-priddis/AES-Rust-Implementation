@@ -7,14 +7,13 @@ pub fn key_expansion(key:[u8;16], mut w:[u32; 44]) -> [u32; 44]{
     let mut temp:u32;
 
     for i in 0..4{
-        println!("{:?}", word_from_bytes([key[4*i], key[4*i+2], key[4*i+2], key[4*i+3]]) );
         w[i] = word_from_bytes([key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]]);
     }
 
     for i in 4..44{
         temp = w[i-1];
         if i % 4 == 0{
-            temp = 0;
+            temp = sub_word(rot_word(temp));
         }
         w[i] = w[i-4] ^ temp;
     }
@@ -69,12 +68,13 @@ mod tests {
 
     #[test]
     fn test_128bit_key_expansion() {
+        //Example derived from Appendix A in the NIST specification. Linked in readme
         let mut w:[u32; 44] = [0;44];
         w = key_expansion([0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c], w);
         assert_eq!( 0x2b7e1516, w[0] );
         assert_eq!( 0x28aed2a6, w[1] );
         assert_eq!( 0xabf71588, w[2] );
-        assert_eq!( 0x2b7e1516, w[3] );
+        assert_eq!( 0x09cf4f3c, w[3] );
         assert_eq!( 0xa0fafe17, w[4] );
         assert_eq!( 0x88542cb1, w[5] );
         assert_eq!( 0xd4d1c6f8, w[20] );

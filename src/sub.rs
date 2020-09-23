@@ -1,3 +1,6 @@
+use crate::utilities::word_from_bytes;
+use crate::utilities::bytes_from_word;
+
 // Taken from https://en.wikipedia.org/wiki/Rijndael_S-box
 static SBOX:[ [u8; 16]; 16] = [
     [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76],
@@ -18,14 +21,17 @@ static SBOX:[ [u8; 16]; 16] = [
     [0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16],
 ];
 
-pub fn sub_word(mut word:[u8;4]) ->[u8;4]{
+pub fn sub_bytes(mut bytes:[u8;4]) -> [u8;4]{
     for i in 0..4{
-        word[i] = SBOX[( (word[i] & 0xf0) >> 4) as usize ][ (word[i] & 0x0f) as usize]; //row then column
+        bytes[i] = SBOX[( (bytes[i] & 0xf0) >> 4) as usize ][ (bytes[i] & 0x0f) as usize]; //row then column
     }
 
-    word
+    bytes
 }
 
+pub fn sub_word(mut word:u32) -> u32{
+    word_from_bytes( sub_bytes( bytes_from_word( word ) ) )
+}
 
 //Tests
 #[cfg(test)]
@@ -34,7 +40,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_sub_word() {
-        assert_eq!([0xb8,0xb8,0xb8,0xb8], sub_word([0x9a, 0x9a, 0x9a, 0x9a]));
+    fn test_sub_bytes() {
+        assert_eq!([0xb8,0xb8,0xb8,0xb8], sub_bytes([0x9a, 0x9a, 0x9a, 0x9a]));
     }
 }

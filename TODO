@@ -1,11 +1,9 @@
-Utilities
-    word_from_bytes
-    bytes_from_word
 
 
 Key expansion
     implement algorithm for 128 bit
     testcases for 128 bit key expansion
+    debug w[4] and onwards
 
 Encrypt
     AddRoundKey
@@ -13,4 +11,11 @@ Encrypt
     ShiftRows
     SubBytes
 
+
+
+Stretch goals
+
+    192 bit keys
+    256 bit keys
     
+    Generate my own sbox(maybe)
