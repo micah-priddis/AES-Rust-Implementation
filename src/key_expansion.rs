@@ -2,8 +2,16 @@ use crate::utilities::word_from_bytes;
 use crate::utilities::bytes_from_word;
 use crate::sub::sub_word;
 
+
+
 //Key expansion pseudo-code take from http://www.brainkart.com/article/AES-Key-Expansion_8410/
 pub fn key_expansion(key:[u8;16], mut w:[u32; 44]) -> [u32; 44]{
+
+    const RCON:[u32; 10] = [0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 
+                            0x20000000, 0x40000000, 0x80000000, 0x1b000000, 0x36000000  ];
+
+    const NK:usize = 4;
+
     let mut temp:u32;
 
     for i in 0..4{
@@ -13,7 +21,7 @@ pub fn key_expansion(key:[u8;16], mut w:[u32; 44]) -> [u32; 44]{
     for i in 4..44{
         temp = w[i-1];
         if i % 4 == 0{
-            temp = sub_word(rot_word(temp));
+            temp = sub_word(rot_word(temp)) ^ RCON[ i/NK - 1 ];
         }
         w[i] = w[i-4] ^ temp;
     }

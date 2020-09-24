@@ -29,7 +29,7 @@ pub fn sub_bytes(mut bytes:[u8;4]) -> [u8;4]{
     bytes
 }
 
-pub fn sub_word(mut word:u32) -> u32{
+pub fn sub_word(word:u32) -> u32{
     word_from_bytes( sub_bytes( bytes_from_word( word ) ) )
 }
 
