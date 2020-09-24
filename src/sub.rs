@@ -21,7 +21,9 @@ static SBOX:[ [u8; 16]; 16] = [
     [0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16],
 ];
 
-pub fn sub_bytes(mut bytes:[u8;4]) -> [u8;4]{
+
+
+pub fn sub_array(mut bytes:[u8;4]) -> [u8;4]{
     for i in 0..4{
         bytes[i] = SBOX[( (bytes[i] & 0xf0) >> 4) as usize ][ (bytes[i] & 0x0f) as usize]; //row then column
     }
@@ -30,7 +32,7 @@ pub fn sub_bytes(mut bytes:[u8;4]) -> [u8;4]{
 }
 
 pub fn sub_word(word:u32) -> u32{
-    word_from_bytes( sub_bytes( bytes_from_word( word ) ) )
+    word_from_bytes( sub_array( bytes_from_word( word ) ) )
 }
 
 //Tests
@@ -40,7 +42,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_sub_bytes() {
-        assert_eq!([0xb8,0xb8,0xb8,0xb8], sub_bytes([0x9a, 0x9a, 0x9a, 0x9a]));
+    fn test_sub_array() {
+        assert_eq!([0xb8,0xb8,0xb8,0xb8], sub_array([0x9a, 0x9a, 0x9a, 0x9a]));
     }
 }

@@ -4,7 +4,7 @@ use crate::sub::sub_word;
 
 
 
-//Key expansion pseudo-code take from http://www.brainkart.com/article/AES-Key-Expansion_8410/
+//based on Key expansion pseudo-code  from http://www.brainkart.com/article/AES-Key-Expansion_8410/
 pub fn key_expansion(key:[u8;16], mut w:[u32; 44]) -> [u32; 44]{
 
     const RCON:[u32; 10] = [0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 
@@ -26,7 +26,7 @@ pub fn key_expansion(key:[u8;16], mut w:[u32; 44]) -> [u32; 44]{
         w[i] = w[i-4] ^ temp;
     }
 
-    w
+    w //Return key schedule
 }
 
 pub fn rot_bytes(mut word:[u8; 4]) -> [u8;4]{
