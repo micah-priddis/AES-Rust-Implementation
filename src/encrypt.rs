@@ -1,6 +1,6 @@
 use crate::sub::sub_array;
-use crate::utilities::word_from_bytes;
 use crate::utilities::bytes_from_word;
+use crate::finite_field_ops::multiply;
 
 pub fn encrypt(in_array:[u8;16], key_schedule:[u32;44]) -> [u8;16]{
     [0;16]
@@ -62,8 +62,17 @@ fn shift_rows(mut state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
     
 }
 
-fn mix_columns(state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
-    [[0;4];4]
+fn mix_columns(mut state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
+    //Column assignment taken from page 18 of NIST spec
+    for i in 0..4{
+        state[0][i] = multiply( 0x02, state[0][i]) ^ multiply(0x03, state[1][i]) ^ state[2][i] ^ state[3][i];
+        state[1][i] = state[0][i] ^ multiply( 0x02, state[1][i]) ^ multiply(0x03, state[2][i]) ^ state[3][i];
+        state[2][i] = state[0][i] ^ state[1][i] ^ multiply( 0x02, state[2][i]) ^ multiply(0x03, state[3][i]);
+        state[3][i] = multiply( 0x03, state[0][i]) ^ state[1][i] ^ state[2][i] ^  multiply(0x02, state[3][i]);
+    }
+
+
+    state
 }
 
 
@@ -72,6 +81,24 @@ fn mix_columns(state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_mix_columns(){
+        assert_eq!(
+            [
+                [0x4, 0xe0, 0x48, 0x28],
+                [0x66, 0xcb, 0xf8, 0x06],
+                [0x81, 0x19, 0xd3, 0x26],
+                [0xe5, 0x9a, 0x7a, 0x4c]
+            ],
+            mix_columns([
+                [0xd4, 0xe0, 0xb8, 0x1e],
+                [0xbf, 0xb4, 0x41, 0x27],
+                [0x5d, 0x52, 0x11, 098],
+                [0x30, 0xae, 0xf1, 0xe5]
+            ])
+        );
+    }
 
     #[test]
     fn test_shift_rows(){
