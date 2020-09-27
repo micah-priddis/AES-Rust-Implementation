@@ -9,3 +9,6 @@ https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture8.pdf
 
 Algebraic aspects of AES
 https://www3.risc.jku.at/research/theorema/Groebner-Bases-Bibliography/gbbib_files/publication_2472.pdf
+
+Testing
+https://csrc.nist.gov/CSRC/media//Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/AESAVS.pdf
