@@ -17,6 +17,13 @@ pub fn bytes_from_word(word:u32)->[u8;4]{
     bytes
 }
 
+pub fn print_matrix(matrix:&[[u8;4];4]){
+    for i in 0..4{
+        println!("{:x?} {:x?} {:x?} {:x?} ", matrix[i][0], matrix[i][1], matrix[i][2], matrix[i][3] );
+    }
+    println!();
+}
+
 
 
 //Tests

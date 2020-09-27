@@ -5,8 +5,8 @@ use crate::sub::sub_word;
 
 
 //based on Key expansion pseudo-code  from http://www.brainkart.com/article/AES-Key-Expansion_8410/
-pub fn key_expansion(key:[u8;16], mut w:[u32; 44]) -> [u32; 44]{
-
+pub fn key_expansion(key:[u8;16]) -> [u32; 44]{
+    let  mut w:[u32; 44] = [0;44];
     const RCON:[u32; 10] = [0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 
                             0x20000000, 0x40000000, 0x80000000, 0x1b000000, 0x36000000  ];
 
@@ -78,7 +78,7 @@ mod tests {
     fn test_128bit_key_expansion() {
         //Example derived from Appendix A in the NIST specification. Linked in readme
         let mut w:[u32; 44] = [0;44];
-        w = key_expansion([0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c], w);
+        w = key_expansion([0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c]);
         assert_eq!( 0x2b7e1516, w[0] );
         assert_eq!( 0x28aed2a6, w[1] );
         assert_eq!( 0xabf71588, w[2] );

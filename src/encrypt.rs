@@ -1,17 +1,13 @@
 use crate::sub::sub_array;
 use crate::utilities::bytes_from_word;
 use crate::finite_field_ops::multiply;
+use crate::key_expansion::key_expansion;
+use crate::utilities::print_matrix;
 
-pub fn encrypt(in_array:[u8;16], key_schedule:[u32;44]) -> [u8;16]{
 
 
-
-    [0;16]
-}
-
-pub fn add_round_key(mut state:[ [u8;4]; 4 ], round_key:[u32;4]) -> [ [u8;4]; 4 ]{
-
-    for i in 0..4{
+pub fn add_round_key(mut state:[ [u8;4]; 4 ], round_key:&[u32]) -> [ [u8;4]; 4 ]{
+    for i in 0..4{  
         let key:[u8;4] = bytes_from_word(round_key[i]);
         for j in 0..4{
             state[j][i] ^= key[j]; //j,i because each word is xor'ed with the column, not row
@@ -82,11 +78,74 @@ fn mix_columns(state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
 }
 
 
+pub fn encrypt(in_array:[u8;16], key:[u8;16]) -> [u8;16]{
+
+    let key_schedule:[u32;44] = key_expansion(key);
+    let mut state:[[u8;4];4] = [[0;4];4];
+
+    //Map input bytes to state 
+    for i in 0..16{
+        state[i % 4][i / 4] = in_array[i]; //Row of bytes is given by i % 4, column is given by i / 4
+    }
+
+    print_matrix(&state);
+
+    state = add_round_key(state,  &key_schedule[0..4]);
+    
+
+    for round in 1..10{
+        println!("Start of round {}", round);
+        print_matrix(&state);
+
+        state = sub_bytes(state);
+        
+        println!("After sub bytes");
+        print_matrix(&state);
+
+        state = shift_rows(state);
+        
+        println!("after of shift_rows");
+        print_matrix(&state);
+
+        state = mix_columns(state);
+        
+        println!("after of mix_columns");
+        print_matrix(&state);
+
+        state = add_round_key(state,  &key_schedule[round*4..(round+1)*4]);
+
+        println!("after of add round key");
+        print_matrix(&state);
+    }
+
+    state = sub_bytes(state);
+    state = shift_rows(state);
+    state = add_round_key(state, &key_schedule[40..44]);
+
+
+    let mut result:[u8;16] = [0;16];
+    for i in 0..16{
+        result[i] = state[i % 4][i / 4];
+    }
+
+    result
+}
+
+
 //Tests
 #[cfg(test)]
 mod tests {
 
     use super::*;
+
+    #[test]
+    fn test_encrypt(){
+        assert_eq!([0x39, 0x25, 0x84, 0x1d, 0x02, 0xdc, 0x09, 0xfb, 0xdc, 0x11, 0x85, 0x97, 0x19, 0x6a, 0x0b, 0x32], //ciphertext
+            encrypt(
+                [0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d, 0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34], //plaintext 
+                [0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c] //key
+            ));
+    }
 
     #[test]
     fn test_mix_columns(){
@@ -175,7 +234,7 @@ mod tests {
                 [0xf6, 0x30, 0x98, 0x07],
                 [0xa8, 0x8d, 0xa2, 0x34]
             ],
-            [0x2b7e1516, 0x28aed2a6, 0xabf71588, 0x09cf4f3c])
+            &[0x2b7e1516, 0x28aed2a6, 0xabf71588, 0x09cf4f3c])
         );
     }
 }
