@@ -8,6 +8,7 @@ mod sub;
 mod key_expansion;
 mod utilities;
 mod encrypt;
+mod decrypt;
 
 fn main() {
 }

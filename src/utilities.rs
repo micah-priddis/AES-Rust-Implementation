@@ -24,6 +24,13 @@ pub fn print_matrix(matrix:&[[u8;4];4]){
     println!();
 }
 
+pub fn round_string(matrix:&[[u8;4];4]){
+    for i in 0..4{
+        print!("{:02x?}{:02x?}{:02x?}{:02x?}", matrix[0][i], matrix[1][i], matrix[2][i], matrix[3][i] );
+    }
+    println!();
+}
+
 
 
 //Tests
