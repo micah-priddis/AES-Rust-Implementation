@@ -7,12 +7,13 @@ pub fn word_from_bytes(bytes:[u8; 4])->u32{
     word
 }
 
-pub fn bytes_from_word(word:u32)->[u8;4]{
-    let mut bytes:[u8;4] = [0;4];
-    bytes[3] = (word & 0xFF ) as u8;
-    bytes[2] = ((word & 0xFF00) >> 8 ) as u8;
-    bytes[1] = ((word & 0xFF0000) >> 16 ) as u8;
-    bytes[0] = ((word & 0xFF000000) >> 24 ) as u8;
+
+pub fn bytes_from_u128(num:u128)->[u8;16]{
+    let mut bytes:[u8;16] = [0;16];
+
+    for i in 0..16{
+        bytes[15 - i] = (( 0xFF << (8 * i) & num ) >>  (8 * i) ) as u8;
+    }
 
     bytes
 }
@@ -30,6 +31,17 @@ pub fn round_string(matrix:&[[u8;4];4]){
     }
     println!();
 }
+
+pub fn bytes_from_word(word:u32)->[u8;4]{
+    let mut bytes:[u8;4] = [0;4];
+    bytes[3] = (word & 0xFF ) as u8;
+    bytes[2] = ((word & 0xFF00) >> 8 ) as u8;
+    bytes[1] = ((word & 0xFF0000) >> 16 ) as u8;
+    bytes[0] = ((word & 0xFF000000) >> 24 ) as u8;
+
+    bytes
+}
+
 
 
 
@@ -53,5 +65,10 @@ mod tests {
         assert_eq!([0x85, 0x34, 0x25, 0x91], bytes_from_word( 0x85342591 ) );
         assert_eq!([0xae, 0xce, 0x32, 0x12], bytes_from_word( 0xaece3212 ) );
         assert_eq!([0xb5, 0x00, 0x04, 0x74], bytes_from_word( 0xb5000474 ) );
+    }
+
+    #[test]
+    fn test_bytes_from_u128() {
+        assert_eq!([0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c], bytes_from_u128( 0x2b7e151628aed2a6abf7158809cf4f3c ) );
     }
 }
