@@ -35,8 +35,23 @@ struct Opt {
 }
 
 fn main() -> io::Result<()> {
+    type CryptoOp = fn([u8;16], &Vec<u8>) -> [u8; 16];
+    let operation:CryptoOp;
 
     let args = Opt::from_args();
+    println!("Start of main");
+    println!("Input: {}", args.input.display());
+    println!("Output: {}", args.output.display());
+    println!("Key: {}", args.key);
+    println!("Decryption? {}", args.decrypt);
+
+    if(args.decrypt){
+        operation = decrypt::decrypt;
+    }
+    else{
+        operation = encrypt::encrypt;
+    }
+
     let mut input = File::open(args.input)?;
     let mut output = File::create(args.output)?;
     let mut buffer:[u8;16] = [0;16];
@@ -45,7 +60,7 @@ fn main() -> io::Result<()> {
     // read up to 10 bytes
     let mut n = input.read(&mut buffer)?;
     while n != 0 {
-        buffer = encrypt::encrypt(buffer, &key);
+        buffer = operation(buffer, &key);
         output.write(&buffer);
         buffer = [0;16];
         n = input.read(&mut buffer)?;

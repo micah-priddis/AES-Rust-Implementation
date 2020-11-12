@@ -88,34 +88,34 @@ pub fn encrypt(in_array:[u8;16], key:&Vec<u8>) -> [u8;16]{
         state[i % 4][i / 4] = in_array[i]; //Row of bytes is given by i % 4, column is given by i / 4
     }
 
-    print_matrix(&state);
+    //print_matrix(&state);
 
     state = add_round_key(state,  &key_schedule[0..4]);
     
 
     for round in 1..10{
-        println!("Start of round {}", round);
-        print_matrix(&state);
+        //println!("Start of round {}", round);
+        //print_matrix(&state);
 
         state = sub_bytes(state);
         
-        println!("After sub bytes");
-        print_matrix(&state);
+        //println!("After sub bytes");
+        //print_matrix(&state);
 
         state = shift_rows(state);
         
-        println!("after of shift_rows");
-        print_matrix(&state);
+        //println!("after of shift_rows");
+        //print_matrix(&state);
 
         state = mix_columns(state);
         
-        println!("after of mix_columns");
-        print_matrix(&state);
+        //println!("after of mix_columns");
+        //print_matrix(&state);
 
         state = add_round_key(state,  &key_schedule[round*4..(round+1)*4]);
 
-        println!("after of add round key");
-        print_matrix(&state);
+        //println!("after of add round key");
+        //print_matrix(&state);
     }
 
     state = sub_bytes(state);

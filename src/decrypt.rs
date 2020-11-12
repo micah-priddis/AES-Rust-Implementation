@@ -69,15 +69,15 @@ pub fn decrypt(in_array:[u8;16], key:&Vec<u8>) -> [u8;16]{
         state[i % 4][i / 4] = in_array[i]; //Row of bytes is given by i % 4, column is given by i / 4
     }
 
-    print_matrix(&state);
+    //print_matrix(&state);
 
     state = add_round_key(state,  &key_schedule[40..44]);
     
 
     for round in (1..10).rev(){
-        //println!("Start of round {}", round);
+        ////println!("Start of round {}", round);
         //round_string(&state);
-        println!();
+        //println!();
         state = inv_shift_rows(state);
         state = inv_sub_bytes(state);
         state = add_round_key(state,  &key_schedule[round*4..(round+1)*4]);
