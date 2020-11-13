@@ -1,9 +1,9 @@
 use crate::sub::inv_sub_array;
 use crate::finite_field_ops::multiply;
 use crate::key_expansion::key_expansion;
-use crate::utilities::print_matrix;
 use crate::encrypt::add_round_key;
 use crate::utilities::round_string;
+use crate::key_expansion::KeyLength;
 
 fn inv_sub_bytes(mut state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
     for i in 0..4{
@@ -59,10 +59,15 @@ fn inv_mix_columns(state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
 }
 
 
-pub fn decrypt(in_array:[u8;16], key:&Vec<u8>) -> [u8;16]{
+pub fn decrypt(in_array:[u8;16], key_schedule:&Vec<u32>, key_length:KeyLength) -> [u8;16]{
 
-    let key_schedule:[u32;44] = key_expansion(&key);
     let mut state:[[u8;4];4] = [[0;4];4];
+    let number_of_rounds;
+    match key_length {
+        KeyLength::AES128 => { number_of_rounds = 10; }
+        KeyLength::AES192 => { number_of_rounds = 12; }
+        KeyLength::AES256 => { number_of_rounds = 14; }
+    }
 
     //Map input bytes to state 
     for i in 0..16{
@@ -71,10 +76,10 @@ pub fn decrypt(in_array:[u8;16], key:&Vec<u8>) -> [u8;16]{
 
     //print_matrix(&state);
 
-    state = add_round_key(state,  &key_schedule[40..44]);
+    state = add_round_key(state,  &key_schedule[(4*number_of_rounds)..(4*number_of_rounds + 4)]);
     
 
-    for round in (1..10).rev(){
+    for round in (1..number_of_rounds).rev(){
         ////println!("Start of round {}", round);
         //round_string(&state);
         //println!();
@@ -103,12 +108,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_decrypt(){
+    fn test_decrypt128(){
         let key:Vec<u8> = vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f];
+        let key_schedule = key_expansion(&key,  KeyLength::AES128);
         assert_eq!([0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff], //plaintext
             decrypt(
                 [0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a], //ciphertext 
-                &key //key
+                &key_schedule, //key
+                KeyLength::AES128
             ));
     }
 

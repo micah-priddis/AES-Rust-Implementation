@@ -14,6 +14,7 @@ use std::io;
 use std::io::prelude::*;
 use std::fs::File;
 use structopt::StructOpt;
+use key_expansion::KeyLength;
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(StructOpt)]
@@ -35,7 +36,7 @@ struct Opt {
 }
 
 fn main() -> io::Result<()> {
-    type CryptoOp = fn([u8;16], &Vec<u8>) -> [u8; 16];
+    type CryptoOp = fn([u8;16], &Vec<u32>, KeyLength) -> [u8; 16];
     let operation:CryptoOp;
 
     let args = Opt::from_args();
@@ -45,7 +46,7 @@ fn main() -> io::Result<()> {
     println!("Key: {}", args.key);
     println!("Decryption? {}", args.decrypt);
 
-    if(args.decrypt){
+    if args.decrypt {
         operation = decrypt::decrypt;
     }
     else{
@@ -57,10 +58,11 @@ fn main() -> io::Result<()> {
     let mut buffer:[u8;16] = [0;16];
     let key:Vec<u8> = utilities::decode_key(&args.key);
 
+    let key_schedule = key_expansion::key_expansion(&key, KeyLength::AES128);
     // read up to 10 bytes
     let mut n = input.read(&mut buffer)?;
     while n != 0 {
-        buffer = operation(buffer, &key);
+        buffer = operation(buffer, &key_schedule, KeyLength::AES128);
         output.write(&buffer);
         buffer = [0;16];
         n = input.read(&mut buffer)?;

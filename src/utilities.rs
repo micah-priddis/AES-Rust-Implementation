@@ -34,7 +34,7 @@ pub fn round_string(matrix:&[[u8;4];4]){
 }
 
 pub fn decode_key(s: &str) -> Vec<u8> {
-    if s.len() != 32 {
+    if s.len() != 32 && s.len() != 48 && s.len() != 64 {
         panic!("Key must be a string of 32 characters");
     }
     decode(s).unwrap()

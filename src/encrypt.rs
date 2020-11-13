@@ -1,9 +1,9 @@
 use crate::sub::sub_array;
 use crate::utilities::bytes_from_word;
+use crate::utilities::decode_key;
 use crate::finite_field_ops::multiply;
 use crate::key_expansion::key_expansion;
-use crate::utilities::print_matrix;
-
+use crate::key_expansion::KeyLength;
 
 
 pub fn add_round_key(mut state:[ [u8;4]; 4 ], round_key:&[u32]) -> [ [u8;4]; 4 ]{
@@ -78,10 +78,16 @@ fn mix_columns(state:[ [u8;4]; 4 ]) -> [ [u8;4]; 4 ]{
 }
 
 
-pub fn encrypt(in_array:[u8;16], key:&Vec<u8>) -> [u8;16]{
+pub fn encrypt(in_array:[u8;16], key_schedule:&Vec<u32>, key_length:KeyLength) -> [u8;16]{
 
-    let key_schedule:[u32;44] = key_expansion(&key);
     let mut state:[[u8;4];4] = [[0;4];4];
+    let number_of_rounds;
+
+    match key_length {
+        KeyLength::AES128 => {number_of_rounds = 10; }
+        KeyLength::AES192 => { number_of_rounds = 12; }
+        KeyLength::AES256 => { number_of_rounds = 14; }
+    }
 
     //Map input bytes to state 
     for i in 0..16{
@@ -93,7 +99,7 @@ pub fn encrypt(in_array:[u8;16], key:&Vec<u8>) -> [u8;16]{
     state = add_round_key(state,  &key_schedule[0..4]);
     
 
-    for round in 1..10{
+    for round in 1..number_of_rounds{
         //println!("Start of round {}", round);
         //print_matrix(&state);
 
@@ -120,7 +126,7 @@ pub fn encrypt(in_array:[u8;16], key:&Vec<u8>) -> [u8;16]{
 
     state = sub_bytes(state);
     state = shift_rows(state);
-    state = add_round_key(state, &key_schedule[40..44]);
+    state = add_round_key(state, &key_schedule[(4*number_of_rounds)..(4*number_of_rounds + 4)]);
 
 
     let mut result:[u8;16] = [0;16];
@@ -139,15 +145,41 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_encrypt(){
-        let key:Vec<u8> = vec![0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c]; //key
+    fn test_encrypt128bit(){
+        let key:Vec<u8> = vec![0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c];
+        let key_schedule:Vec<u32> = key_expansion(&key, KeyLength::AES128); //key
         assert_eq!([0x39, 0x25, 0x84, 0x1d, 0x02, 0xdc, 0x09, 0xfb, 0xdc, 0x11, 0x85, 0x97, 0x19, 0x6a, 0x0b, 0x32], //ciphertext
             encrypt(
                 [0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d, 0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34], //plaintext 
-                &key
+                &key_schedule,
+                KeyLength::AES128
             ));
     }
 
+    #[test]
+    fn test_encrypt192bit(){
+
+        let key:Vec<u8> = decode_key("000102030405060708090a0b0c0d0e0f1011121314151617");
+        let key_schedule:Vec<u32> = key_expansion(&key, KeyLength::AES192); //key
+        assert_eq!([0xdd,0xa9,0x7c,0xa4,0x86,0x4c,0xdf,0xe0,0x6e,0xaf,0x70,0xa0,0xec,0x0d,0x71,0x91], //ciphertext
+            encrypt(
+                [0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff], //plaintext 
+                &key_schedule,
+                KeyLength::AES192
+            ));
+    }
+
+    #[test]
+    fn test_encrypt256bit(){
+        let key:Vec<u8> = decode_key("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+        let key_schedule:Vec<u32> = key_expansion(&key, KeyLength::AES256); //key
+        assert_eq!([0x8e,0xa2,0xb7,0xca,0x51,0x67,0x45,0xbf,0xea,0xfc,0x49,0x90,0x4b,0x49,0x60,0x89], //ciphertext
+            encrypt(
+                [0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff], //plaintext 
+                &key_schedule,
+                KeyLength::AES256
+            ));
+    }
     #[test]
     fn test_mix_columns(){
 
