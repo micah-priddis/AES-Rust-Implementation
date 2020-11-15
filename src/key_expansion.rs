@@ -2,7 +2,7 @@ use crate::utilities::word_from_bytes;
 use crate::utilities::bytes_from_word;
 use crate::sub::sub_word;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum KeyLength {
     AES128,
     AES192,

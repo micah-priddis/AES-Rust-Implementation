@@ -35,9 +35,35 @@ struct Opt {
     key: String,
 }
 
+
+fn encrypt_file(mut input:File, mut output:File,  key_schedule:Vec<u32>, length:KeyLength) -> io::Result<()> {
+    
+    let mut buffer:[u8;16] = [0;16];
+    let mut n = input.read(&mut buffer)?;
+    while n != 0 {
+        buffer = encrypt::encrypt_block(buffer, &key_schedule, length);
+        output.write(&buffer);
+        buffer = [0;16];
+        n = input.read(&mut buffer)?;
+    }
+    Ok(())
+}
+
+fn decrypt_file(mut input:File, mut output:File, key_schedule:Vec<u32>, length:KeyLength) -> io::Result<()>{
+    let mut buffer:[u8;16] = [0;16];
+    let mut n = input.read(&mut buffer)?;
+    while n != 0 {
+        buffer = decrypt::decrypt_block(buffer, &key_schedule, length);
+        output.write(&buffer);
+        buffer = [0;16];
+        n = input.read(&mut buffer)?;
+    }
+    Ok(())
+}
+
+
+
 fn main() -> io::Result<()> {
-    type CryptoOp = fn([u8;16], &Vec<u32>, KeyLength) -> [u8; 16];
-    let operation:CryptoOp;
 
     let args = Opt::from_args();
     println!("Start of main");
@@ -46,29 +72,20 @@ fn main() -> io::Result<()> {
     println!("Key: {}", args.key);
     println!("Decryption? {}", args.decrypt);
 
+
+
+    let input = File::open(args.input)?;
+    let output = File::create(args.output)?;
+
+    let key:Vec<u8> = utilities::decode_key(&args.key);
+    let key_schedule = key_expansion::key_expansion(&key, KeyLength::AES128);
+
     if args.decrypt {
-        operation = decrypt::decrypt;
+        return decrypt_file(input, output, key_schedule, KeyLength::AES128);
     }
     else{
-        operation = encrypt::encrypt;
+        return encrypt_file(input, output, key_schedule, KeyLength::AES128);
     }
-
-    let mut input = File::open(args.input)?;
-    let mut output = File::create(args.output)?;
-    let mut buffer:[u8;16] = [0;16];
-    let key:Vec<u8> = utilities::decode_key(&args.key);
-
-    let key_schedule = key_expansion::key_expansion(&key, KeyLength::AES128);
-    // read up to 10 bytes
-    let mut n = input.read(&mut buffer)?;
-    while n != 0 {
-        buffer = operation(buffer, &key_schedule, KeyLength::AES128);
-        output.write(&buffer);
-        buffer = [0;16];
-        n = input.read(&mut buffer)?;
-    }
-    
-    Ok(())
 }
 
 
