@@ -40,6 +40,13 @@ pub fn decode_key(s: &str) -> Vec<u8> {
     decode(s).unwrap()
 }
 
+pub fn xor_blocks(mut block:[u8;16], vector:[u8;16]) -> [u8;16] {
+    for i in 0..16{
+        block[i] ^= vector[i]
+    }
+    block
+}
+
 
 //Tests
 #[cfg(test)]

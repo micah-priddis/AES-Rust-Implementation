@@ -15,6 +15,12 @@ use std::io::prelude::*;
 use std::fs::File;
 use structopt::StructOpt;
 use key_expansion::KeyLength;
+use rand::Rng;
+
+
+
+use crate::utilities::xor_blocks;
+//let mut rng = rand::thread_rng();
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(StructOpt)]
@@ -35,6 +41,49 @@ struct Opt {
     key: String,
 }
 
+fn encrypt_file_cbc(mut input:File, mut output:File,  key_schedule:Vec<u32>, length:KeyLength) -> io::Result<()>{
+
+    let mut initialization_vector:[u8;16] = rand::thread_rng().gen::<[u8; 16]>();
+
+    //First 16 bytes
+    output.write(&initialization_vector);
+
+    let mut buffer:[u8;16] = [0;16];
+    let mut n = input.read(&mut buffer)?;
+    while n != 0 {
+        buffer = xor_blocks(buffer, initialization_vector);
+        initialization_vector = buffer;
+        buffer = encrypt::encrypt_block(buffer, &key_schedule, length);
+        output.write(&buffer);
+        buffer = [0;16];
+        n = input.read(&mut buffer)?;
+    }
+    Ok(())
+}
+
+fn decrypt_file_cbc(mut input:File, mut output:File, key_schedule:Vec<u32>, length:KeyLength) -> io::Result<()>{
+
+    
+    let mut initialization_vector:[u8;16] = [0;16];
+    let mut ciphertext_block:[u8;16] = [0;16];
+    let iv_size = input.read(&mut initialization_vector)?;
+    if iv_size != 16{
+        panic!("Error reading initialization vector!")
+    }
+
+    let mut buffer:[u8;16] = [0;16];
+    let mut n = input.read(&mut buffer)?;
+    while n != 0 {
+        ciphertext_block = buffer;
+        buffer = decrypt::decrypt_block(buffer, &key_schedule, length);
+        buffer = xor_blocks(buffer, initialization_vector );
+        initialization_vector = ciphertext_block;
+        output.write(&buffer);
+        buffer = [0;16];
+        n = input.read(&mut buffer)?;
+    }
+    Ok(())
+}
 
 fn encrypt_file(mut input:File, mut output:File,  key_schedule:Vec<u32>, length:KeyLength) -> io::Result<()> {
     
@@ -81,10 +130,10 @@ fn main() -> io::Result<()> {
     let key_schedule = key_expansion::key_expansion(&key, KeyLength::AES128);
 
     if args.decrypt {
-        return decrypt_file(input, output, key_schedule, KeyLength::AES128);
+        return decrypt_file_cbc(input, output, key_schedule, KeyLength::AES128);
     }
     else{
-        return encrypt_file(input, output, key_schedule, KeyLength::AES128);
+        return encrypt_file_cbc(input, output, key_schedule, KeyLength::AES128);
     }
 }
 
