@@ -12,3 +12,5 @@ https://www3.risc.jku.at/research/theorema/Groebner-Bases-Bibliography/gbbib_fil
 
 Testing
 https://csrc.nist.gov/CSRC/media//Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/AESAVS.pdf
+
+./target/debug/aes.exe foo.txt  output.cr

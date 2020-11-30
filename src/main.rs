@@ -19,6 +19,7 @@ use rand::Rng;
 
 
 
+
 use crate::utilities::xor_blocks;
 //let mut rng = rand::thread_rng();
 
@@ -50,19 +51,34 @@ fn encrypt_file_cbc(mut input:File, mut output:File,  key_schedule:Vec<u32>, len
 
     let mut buffer:[u8;16] = [0;16];
     let mut n = input.read(&mut buffer)?;
-    while n != 0 {
+    while n == 16 {
         buffer = xor_blocks(buffer, initialization_vector);
         initialization_vector = buffer;
         buffer = encrypt::encrypt_block(buffer, &key_schedule, length);
         output.write(&buffer);
-        buffer = [0;16];
         n = input.read(&mut buffer)?;
     }
+    output.write(&buffer);
+    let padding:u8 = 16 - n as u8;
+    if padding == 0{
+        output.write(&[16;16]);
+    }
+    else{
+        let mut bytes:Vec<u8> = Vec::new();
+        for i in 0..padding {
+            bytes.push(padding);
+        }
+        output.write(&bytes);
+    }
+
     Ok(())
 }
 
 fn decrypt_file_cbc(mut input:File, mut output:File, key_schedule:Vec<u32>, length:KeyLength) -> io::Result<()>{
 
+    let file_seek_result = input.seek(io::SeekFrom::End(0));
+    let file_size = file_seek_result.unwrap();
+    input.seek(io::SeekFrom::Start(0));
     
     let mut initialization_vector:[u8;16] = [0;16];
     let mut ciphertext_block:[u8;16] = [0;16];
@@ -73,7 +89,8 @@ fn decrypt_file_cbc(mut input:File, mut output:File, key_schedule:Vec<u32>, leng
 
     let mut buffer:[u8;16] = [0;16];
     let mut n = input.read(&mut buffer)?;
-    while n != 0 {
+    let mut bytes_read = 0;
+    while bytes_read < file_size {
         ciphertext_block = buffer;
         buffer = decrypt::decrypt_block(buffer, &key_schedule, length);
         buffer = xor_blocks(buffer, initialization_vector );
@@ -81,7 +98,16 @@ fn decrypt_file_cbc(mut input:File, mut output:File, key_schedule:Vec<u32>, leng
         output.write(&buffer);
         buffer = [0;16];
         n = input.read(&mut buffer)?;
+        bytes_read += n as u64;
     }
+
+    ciphertext_block = buffer;
+    buffer = decrypt::decrypt_block(buffer, &key_schedule, length);
+    buffer = xor_blocks(buffer, initialization_vector );
+    
+    let num_of_bytes = 16 - buffer[15];
+    
+
     Ok(())
 }
 
